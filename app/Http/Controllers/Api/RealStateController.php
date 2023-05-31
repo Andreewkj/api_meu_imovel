@@ -30,7 +30,7 @@ class RealStateController extends Controller
             $realState = $this->realState->findOrfail($id);
 
             return response()->json([
-                'data' => $realState,
+                'data' => $realState->categories
             ], 200);
         } catch (\Exception $e) {
             $message = new ApiMessages($e->getMessage());
@@ -42,7 +42,10 @@ class RealStateController extends Controller
     {
         $data = $request->all();
         try {
-            $this->realState->create($data);
+            $realState = $this->realState->create($data);
+            if (isset($data['categories']) && count($data['categories'])) {
+                $realState->categories()->sync($data['categories']);
+            }
 
             return response()->json([
                 'data' => [
@@ -63,6 +66,10 @@ class RealStateController extends Controller
             $realState = $this->realState->findOrfail($id);
 
             $realState->update($data);
+
+            if (isset($data['categories']) && count($data['categories'])) {
+                $realState->categories()->sync($data['categories']);
+            }
 
             return response()->json([
                 'data' => [
