@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\Auth\LoginJwtController;
 use App\Http\Controllers\Api\CategoryController;
 use App\Http\Controllers\Api\RealStateController;
 use App\Http\Controllers\Api\RealStatePhotoController;
@@ -22,22 +23,28 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
 
-Route::prefix('v1')->group(function (){
-    Route::name('real_states.')->group(function (){
-        Route::resource('real-states', RealStateController::class);
-    });
+Route::prefix('v1')->group(function () {
 
-    Route::name('users.')->group(function (){
-        Route::resource('users', UserController::class);
-    });
+    Route::post('login', [LoginJwtController::class, 'login'])->name('login');
+    Route::get('logout', [LoginJwtController::class, 'logout'])->name('logout');
 
-    Route::name('categories.')->group(function (){
-        Route::get('categories/{id}/real-states', [CategoryController::class, 'realState']);
-        Route::resource('categories', CategoryController::class);
-    });
-
-    Route::name('photos.')->prefix('photos')->group(function (){
-        Route::delete('/{id}', [RealStatePhotoController::class, 'remove'])->name('delete');
-        Route::put('/set-thumb/{photoId}/{realStateId}', [RealStatePhotoController::class, 'setThumb'])->name('setThumb');
+    Route::group(['middleware' => ['jwt.auth']], function() {
+        Route::name('real_states.')->group(function (){
+            Route::resource('real-states', RealStateController::class);
+        });
+    
+        Route::name('users.')->group(function (){
+            Route::resource('users', UserController::class);
+        });
+    
+        Route::name('categories.')->group(function (){
+            Route::get('categories/{id}/real-states', [CategoryController::class, 'realState']);
+            Route::resource('categories', CategoryController::class);
+        });
+    
+        Route::name('photos.')->prefix('photos')->group(function (){
+            Route::delete('/{id}', [RealStatePhotoController::class, 'remove'])->name('delete');
+            Route::put('/set-thumb/{photoId}/{realStateId}', [RealStatePhotoController::class, 'setThumb'])->name('setThumb');
+        });
     });
 });
