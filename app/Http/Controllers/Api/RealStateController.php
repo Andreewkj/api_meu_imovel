@@ -6,7 +6,6 @@ use App\Api\ApiMessages;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\RealStateRequest;
 use App\Models\RealState;
-use Illuminate\Http\Request;
 
 class RealStateController extends Controller
 {
@@ -19,7 +18,7 @@ class RealStateController extends Controller
 
     public function index()
     {
-        $realState = $this->realState->paginate('10');
+        $realState = auth('api')->user()->real_state;
 
         return Response()->json($realState, 200);
     }
@@ -27,7 +26,9 @@ class RealStateController extends Controller
     public function show($id)
     {
         try {
-            $realState = $this->realState->with('photos')->findOrfail($id);
+            $user = auth('api')->user();
+
+            $realState = $user->real_state()->with('photos', 'categories')->findOrfail($id);
 
             return response()->json([
                 'data' => $realState
@@ -41,9 +42,11 @@ class RealStateController extends Controller
     public function store(RealStateRequest $request)
     {
         $data = $request->all();
-
         $images = $request->file('images');
+
         try {
+            $data['user_id'] = auth('api')->user()->id;
+
             $realState = $this->realState->create($data);
             if (isset($data['categories']) && count($data['categories'])) {
                 $realState->categories()->sync($data['categories']);
@@ -77,7 +80,9 @@ class RealStateController extends Controller
         $images = $request->file('images');
 
         try {
-            $realState = $this->realState->findOrfail($id);
+
+            $user = auth('api')->user();
+            $realState = $user->real_state()->findOrfail($id);
 
             $realState->update($data);
 
@@ -110,7 +115,8 @@ class RealStateController extends Controller
     public function destroy($id)
     {
         try {
-            $realState = $this->realState->findOrfail($id);
+            $user = auth('api')->user();
+            $realState = $user->real_state()->findOrfail($id);
 
             $realState->delete();
 

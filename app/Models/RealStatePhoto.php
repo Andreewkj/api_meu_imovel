@@ -16,6 +16,6 @@ class RealStatePhoto extends Model
 
     public function realState()
     {
-        return $this->belongsTo(realState::class);
+        return $this->belongsTo(RealState::class);
     }
 }
