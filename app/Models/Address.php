@@ -19,8 +19,8 @@ class Address extends Model
         return $this->hasMany(City::class);
     }
 
-    public function adresses()
+    public function real_state()
     {
-        return $this->hasMany(Address::class);
+        return $this->hasOne(RealState::class);
     }
 }
